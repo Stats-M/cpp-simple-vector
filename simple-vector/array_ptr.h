@@ -1,5 +1,5 @@
 // вставьте сюда ваш код для класса ArrayPtr
-// внесите в него изменения, 
+// внесиnте в него изменения, 
 // которые позволят реализовать move-семантику
 
 #pragma once
@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <string_view>    //для std::swap()
+#include <utility>        //для std::exchange()
 
 template <typename Type>
 class ArrayPtr
@@ -48,9 +49,11 @@ public:
     ArrayPtr(ArrayPtr&& source)
     {
         // Присваиваем указатель на массив
-        raw_ptr_ = source.raw_ptr_;
-        // Стираем указатель у источника
-        source.raw_ptr_ = nullptr;
+// Марина М.: std::exchange или свапнуть
+//raw_ptr_ = source.raw_ptr_;
+// Стираем указатель у источника
+//source.raw_ptr_ = nullptr;
+        raw_ptr_ = std::exchange(source.raw_ptr_, nullptr);
     }
 
     // Оператор присваивания перемещением.
@@ -66,9 +69,11 @@ public:
 #endif // !DEBUG_
 
         // Присваиваем указатель на массив
-        raw_ptr_ = source.raw_ptr_;
-        // Стираем указатель у источника
-        source.raw_ptr_ = nullptr;
+// Марина М.: std::exchange или свапнуть
+//raw_ptr_ = source.raw_ptr_;
+// Стираем указатель у источника
+//source.raw_ptr_ = nullptr;
+        raw_ptr_ = std::exchange(source.raw_ptr_, nullptr);
     }
 
     ~ArrayPtr()
