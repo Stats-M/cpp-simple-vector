@@ -1,5 +1,3 @@
-// вставьте сюда ваш код для класса SimpleVector
-// внесите необходимые изменения для поддержки move-семантики
 #pragma once
 #include "array_ptr.h"
 
@@ -43,12 +41,22 @@ public:
 
     SimpleVector() noexcept = default;
 
+
+// Марина М. если std::move(Type()) заменить на Type{}, то получится практически реализация 
+//           конструктора со значением, можно делегировать работу ему. Все-таки Type{} - это тоже некое значение
+
+    /*
     // Создаёт вектор из size элементов, инициализированных значением по умолчанию
     explicit SimpleVector(size_t size) : size_(size), capacity_(size), internal_array_(size)
     {
         //Напишите тело конструктора самостоятельно
         //std::fill(internal_array_.Get(), internal_array_.Get() + size, std::move(Type()));
-        custom_fill(internal_array_.Get(), internal_array_.Get() + size);
+        CustomFill(internal_array_.Get(), internal_array_.Get() + size);
+    }
+    */
+
+    explicit SimpleVector(size_t size) : SimpleVector(size, Type{})
+    {
     }
 
     // Создаёт вектор из size элементов, инициализированных значением value
@@ -63,7 +71,7 @@ public:
     {
         // Напишите тело конструктора с инициализацией rvalue самостоятельно
         //std::fill(internal_array_.Get(), internal_array_.Get() + size, std::move(Type()));
-        custom_fill(internal_array_.Get(), internal_array_.Get() + size);
+        CustomFill(internal_array_.Get(), internal_array_.Get() + size);
         *begin() = std::move(rvalue);
     }
 
@@ -99,7 +107,7 @@ public:
     }
 
     // Конструктор перемещения
-    SimpleVector(SimpleVector&& other) : size_(other.size_), capacity_(other.capacity_)
+    SimpleVector(SimpleVector&& other) noexcept : size_(other.size_), capacity_(other.capacity_)
     {
         //Напишите тело конструктора перемещения самостоятельно
 
@@ -115,7 +123,7 @@ public:
     }
 
     // Конструктор присваивания перемещением
-    SimpleVector& operator=(SimpleVector&& rhs)
+    SimpleVector& operator=(SimpleVector&& rhs) noexcept
     {
         // Напишите тело конструктора присваивания перемещением самостоятельно
         if (this != &rhs)
@@ -165,14 +173,26 @@ public:
     Type& operator[](size_t index) noexcept
     {
         //Напишите тело самостоятельно
-        return *(internal_array_.Get() + index);
+
+// Марина М. в реализации не хватает проверки, что индекс не превышает размерности вектора 
+        assert(index >= 0 && index < size_);
+
+// Марина М. в ArrayPtr у вас реализованы квадратные скобки, поэтому можно их использовать 
+        //return *(internal_array_.Get() + index);
+        return internal_array_.Get()[index];
     }
 
     // Возвращает константную ссылку на элемент с индексом index
     const Type& operator[](size_t index) const noexcept
     {
         //Напишите тело самостоятельно
-        return *(internal_array_.Get() + index);
+
+// Марина М. в реализации не хватает проверки, что индекс не превышает размерности вектора 
+        assert(index >= 0 && index < size_);
+
+        // Марина М. в ArrayPtr у вас реализованы квадратные скобки, поэтому можно их использовать 
+        //return *(internal_array_.Get() + index);
+        return internal_array_.Get()[index];
     }
 
     // Возвращает константную ссылку на элемент с индексом index
@@ -219,7 +239,7 @@ public:
                 // Не вычитаем 1 из [internal_array_.Get() + new_size), т.к. правая граница 
                 // полуинтервала не входит в интервал обрабатываемых алгоритмом данных
                 //std::fill(internal_array_.Get() + size_, internal_array_.Get() + new_size, Type());
-                custom_fill(internal_array_.Get() + size_, internal_array_.Get() + new_size);
+                CustomFill(internal_array_.Get() + size_, internal_array_.Get() + new_size);
             }
             else
             {
@@ -229,7 +249,7 @@ public:
 
                 // Обнуляем новые значащие элементы [size...new_size)
                 //std::fill(buffer.Get() + size_, buffer.Get() + new_size, Type());
-                custom_fill(buffer.Get() + size_, buffer.Get() + new_size);
+                CustomFill(buffer.Get() + size_, buffer.Get() + new_size);
                 // Перемещаем старые элементы (move т.к. могут быть элементы без конструктора копирования)
                 std::move(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
                 // Меняем указатели на массивы 
@@ -310,7 +330,13 @@ public:
     Iterator Insert(ConstIterator pos, const Type& value)
     {
         // Напишите тело Insert самостоятельно
+
+// Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
+// попадает в интервал от начала до конца вектора
+        assert(pos >= begin() && pos <= end());
+
         auto offset_start = std::distance(cbegin(), pos);
+        // auto offset_end = std::distance(pos, cend());
 
         if (size_ < capacity_)
         {
@@ -353,6 +379,11 @@ public:
     Iterator Insert(ConstIterator pos, Type&& value)
     {
         // Напишите тело Insert самостоятельно
+
+// Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
+// попадает в интервал от начала до конца вектора
+        assert(pos >= begin() && pos <= end());
+
         auto offset_start = std::distance(cbegin(), pos);
         // auto offset_end = std::distance(pos, cend());
 
@@ -392,16 +423,25 @@ public:
     void PopBack() noexcept
     {
         // Напишите тело PopBack самостоятельно
-        if (!IsEmpty())
+
+// Марина М. стоит проверить по ассерт. так как серьезная ошибка - попытка удалить запись из пустого вектора
+/*        if (!IsEmpty())
         {
             --size_;
-        }
+        }*/
+        assert(!IsEmpty());
+        --size_;
     }
 
     // Удаляет элемент вектора в указанной позиции
     Iterator Erase(ConstIterator pos)
     {
         // Напишите тело Erase самостоятельно
+
+// Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
+// попадает в интервал от начала до конца вектора
+        assert(pos >= begin() && pos <= end());
+
         // Сдвигаем элементы после pos по одному к началу вектора, затирая pos
         //std::copy(pos + 1, cend(), Iterator(pos));
         // Используем move итераторы
@@ -500,8 +540,10 @@ private:
     // Внутренний массив, управляемый умным указателем
     ArrayPtr<Type> internal_array_;
 
+// Марина М. стиль наименования функции не совпадает с единым стилем в реализации
+// ----Станислав М. ОК. Стиль подражал стилю std::fill, std:copy_backward и т.д.
     // Заполнение диапазона некопируемыми типами
-    void custom_fill(Iterator first, Iterator last)
+    void CustomFill(Iterator first, Iterator last)
     {
         assert(first < last);
         while (first < last)
