@@ -9,9 +9,6 @@
 #include <stdexcept>
 #include <utility>
 
-// Для отладочных выводов, в финале можно отключить
-//#include <iostream>
-
 using namespace std;
 
 // Класс-обертка для различия версий конструкторов с параметрами size и reserve (оба типа size_t)
@@ -62,15 +59,12 @@ public:
     // Создаёт вектор из size элементов, инициализированных значением value
     SimpleVector(size_t size, const Type& value) : size_(size), capacity_(size), internal_array_(size)
     {
-        //Напишите тело конструктора самостоятельно
         std::fill(internal_array_.Get(), internal_array_.Get() + size, value);
     }
 
     // Создаёт вектор из size элементов, инициализированных значением rvalue
     SimpleVector(size_t size, Type&& rvalue) : size_(size), capacity_(size), internal_array_(size)
     {
-        // Напишите тело конструктора с инициализацией rvalue самостоятельно
-        //std::fill(internal_array_.Get(), internal_array_.Get() + size, std::move(Type()));
         CustomFill(internal_array_.Get(), internal_array_.Get() + size);
         *begin() = std::move(rvalue);
     }
@@ -78,16 +72,12 @@ public:
     // Создаёт вектор из std::initializer_list
     SimpleVector(std::initializer_list<Type> init) : size_(init.size()), capacity_(init.size()), internal_array_(init.size())
     {
-        //Напишите тело конструктора самостоятельно
-
         // Перемещаем элементы, т.к. они могут быть без конструктора копирования
         static_cast<void>(std::move(init.begin(), init.end(), internal_array_.Get()));
     }
 
     SimpleVector(const SimpleVector& other)
     {
-        // Напишите тело конструктора самостоятельно
-
         // Допущение: временный вектор создается с capacity==size, а не с capacity==other.capacity
         SimpleVector tmp_vector(other.size_);
         std::copy(other.begin(), other.end(), tmp_vector.begin());
@@ -96,8 +86,6 @@ public:
 
     SimpleVector& operator=(const SimpleVector& rhs)
     {
-        // Напишите тело конструктора самостоятельно
-
         if (this != &rhs)
         {
             auto tmp_rhs(rhs);
@@ -109,8 +97,6 @@ public:
     // Конструктор перемещения
     SimpleVector(SimpleVector&& other) noexcept : size_(other.size_), capacity_(other.capacity_)
     {
-        //Напишите тело конструктора перемещения самостоятельно
-
         if (this != &other)
         {
             internal_array_.swap(other.internal_array_);
@@ -125,7 +111,6 @@ public:
     // Конструктор присваивания перемещением
     SimpleVector& operator=(SimpleVector&& rhs) noexcept
     {
-        // Напишите тело конструктора присваивания перемещением самостоятельно
         if (this != &rhs)
         {
             internal_array_.swap(rhs.internal_array_);
@@ -141,9 +126,6 @@ public:
 
     SimpleVector(ReserveProxyObj obj) : size_(0u), capacity_(obj.reserve_value), internal_array_(capacity_)
     {
-        //Напишите тело конструктора самостоятельно
-        //std::fill(internal_array_.Get(), internal_array_.Get() + capacity_, Type{});
-
         // Т.к. этот конструктор создает вектор с заданной емкостью, но с размером 0, 
         // вызывать fill не требуется (нет элементов для заполнения)
     }
@@ -151,28 +133,24 @@ public:
     // Возвращает количество элементов в массиве
     size_t GetSize() const noexcept
     {
-        //Напишите тело самостоятельно
         return size_;
     }
 
     // Возвращает вместимость массива
     size_t GetCapacity() const noexcept
     {
-        //Напишите тело самостоятельно
         return capacity_;
     }
 
     // Сообщает, пустой ли массив
     bool IsEmpty() const noexcept
     {
-        //Напишите тело самостоятельно
         return (size_ == 0);
     }
 
     // Возвращает ссылку на элемент с индексом index
     Type& operator[](size_t index) noexcept
     {
-        //Напишите тело самостоятельно
 
 // Марина М. в реализации не хватает проверки, что индекс не превышает размерности вектора 
         assert(index >= 0 && index < size_);
@@ -185,7 +163,6 @@ public:
     // Возвращает константную ссылку на элемент с индексом index
     const Type& operator[](size_t index) const noexcept
     {
-        //Напишите тело самостоятельно
 
 // Марина М. в реализации не хватает проверки, что индекс не превышает размерности вектора 
         assert(index >= 0 && index < size_);
@@ -199,7 +176,6 @@ public:
     // Выбрасывает исключение std::out_of_range, если index >= size
     Type& At(size_t index)
     {
-        //Напишите тело самостоятельно
         if (index >= size_)
         {
             throw out_of_range("Index is out of range (operator At())"s);
@@ -211,7 +187,6 @@ public:
     // Выбрасывает исключение std::out_of_range, если index >= size
     const Type& At(size_t index) const
     {
-        //Напишите тело самостоятельно
         if (index >= size_)
         {
             throw out_of_range("Index is out of range (operator const At())"s);
@@ -222,7 +197,6 @@ public:
     // Обнуляет размер массива, не изменяя его вместимость
     void Clear() noexcept
     {
-        //Напишите тело самостоятельно
         size_ = 0;
     }
 
@@ -236,9 +210,6 @@ public:
             // Новый размер меньше емкости. Просто обнуляем добавляемые сверх size_ элементы
             if (new_size <= capacity_)
             {
-                // Не вычитаем 1 из [internal_array_.Get() + new_size), т.к. правая граница 
-                // полуинтервала не входит в интервал обрабатываемых алгоритмом данных
-                //std::fill(internal_array_.Get() + size_, internal_array_.Get() + new_size, Type());
                 CustomFill(internal_array_.Get() + size_, internal_array_.Get() + new_size);
             }
             else
@@ -248,7 +219,6 @@ public:
                 ArrayPtr<Type> buffer(new_capacity);
 
                 // Обнуляем новые значащие элементы [size...new_size)
-                //std::fill(buffer.Get() + size_, buffer.Get() + new_size, Type());
                 CustomFill(buffer.Get() + size_, buffer.Get() + new_size);
                 // Перемещаем старые элементы (move т.к. могут быть элементы без конструктора копирования)
                 std::move(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
@@ -266,11 +236,9 @@ public:
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(const Type& item)
     {
-        // Напишите тело PushBack самостоятельно
 
         if (size_ < capacity_)
         {
-            //internal_array_[size_] = item;
             std::exchange(internal_array_[size_], item);
             ++size_;
         }
@@ -283,7 +251,6 @@ public:
             // Копируем исходный вектор во временный буфер
             std::copy(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
             // Копируем добавляемое значение в конец буфера
-            //buffer[size_] = item;
             std::exchange(buffer[size_], item);
             // Меняем указатели на массивы 
             buffer.swap(internal_array_);
@@ -297,11 +264,9 @@ public:
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(Type&& item)
     {
-        // Напишите тело PushBack самостоятельно
 
         if (size_ < capacity_)
         {
-            //internal_array_[size_] = std::move(item);
             std::exchange(internal_array_[size_], std::move(item));
             ++size_;
         }
@@ -314,7 +279,6 @@ public:
             // Перемещаем исходный вектор во временный буфер
             std::move(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
             // Перемещаем добавляемое значение в конец буфера
-            //buffer[size_] = std::move(item);
             std::exchange(buffer[size_], std::move(item));
             // Меняем указатели на массивы 
             buffer.swap(internal_array_);
@@ -329,23 +293,19 @@ public:
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, const Type& value)
     {
-        // Напишите тело Insert самостоятельно
 
 // Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
 // попадает в интервал от начала до конца вектора
         assert(pos >= begin() && pos <= end());
 
         auto offset_start = std::distance(cbegin(), pos);
-        // auto offset_end = std::distance(pos, cend());
 
         if (size_ < capacity_)
         {
             // Сдвигаем элементы по одному к концу вектора начиная с конца, освобождая pos
-//            std::move_backward(pos, cend(), end() + 1);
             std::copy_backward(pos, cend(), end() + 1);
             // Вставляем value
             internal_array_[offset_start] = value;
-//            std::exchange(internal_array_[offset_start], value);
             ++size_;
         }
         else
@@ -355,11 +315,9 @@ public:
             ArrayPtr<Type> buffer(new_capacity);
 
             // Копируем начало вектора до точки вставки
-//            std::move(begin(), Iterator(pos), buffer.Get());
             std::copy(begin(), Iterator(pos), buffer.Get());
             // Вставляем добавляемое значение в позицию pos
             buffer[offset_start] = value;
-//            std::exchange(buffer[offset_start], value);
             // Копируем оставшуюся часть вектора
             // buffer.Get() + отступ до места вставки + 1 вставленное значение
             std::copy(pos, cend(), buffer.Get() + offset_start + 1);
@@ -378,21 +336,18 @@ public:
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, Type&& value)
     {
-        // Напишите тело Insert самостоятельно
 
 // Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
 // попадает в интервал от начала до конца вектора
         assert(pos >= begin() && pos <= end());
 
         auto offset_start = std::distance(cbegin(), pos);
-        // auto offset_end = std::distance(pos, cend());
 
         if (size_ < capacity_)
         {
             // Сдвигаем элементы по одному к концу вектора начиная с конца, освобождая pos
             std::move_backward(Iterator(pos), Iterator(cend()), Iterator(end() + 1));
             // Используем семантику перемещения для некопируемых value
-            //internal_array_[offset_start] = std::move(value);
             std::exchange(internal_array_[offset_start], std::move(value));
             ++size_;
         }
@@ -405,7 +360,6 @@ public:
             // Перемещаем начало вектора до точки вставки во временный буфер
             std::move(begin(), Iterator(pos), buffer.Get());
             // Перемещаем добавляемое значение в позицию pos
-            //buffer[offset_start] = std::move(value);
             std::exchange(buffer[offset_start], std::move(value));
             // Перемещаем оставшуюся часть вектора
             // buffer.Get() + отступ до места вставки + 1 вставленное значение
@@ -422,7 +376,6 @@ public:
     // "Удаляет" последний элемент вектора. Вектор не должен быть пустым
     void PopBack() noexcept
     {
-        // Напишите тело PopBack самостоятельно
 
 // Марина М. стоит проверить по ассерт. так как серьезная ошибка - попытка удалить запись из пустого вектора
 /*        if (!IsEmpty())
@@ -436,16 +389,13 @@ public:
     // Удаляет элемент вектора в указанной позиции
     Iterator Erase(ConstIterator pos)
     {
-        // Напишите тело Erase самостоятельно
 
 // Марина М. в метода Insert и Erase не хватает проверки (assert), что указанная позиция 
 // попадает в интервал от начала до конца вектора
         assert(pos >= begin() && pos <= end());
 
         // Сдвигаем элементы после pos по одному к началу вектора, затирая pos
-        //std::copy(pos + 1, cend(), Iterator(pos));
         // Используем move итераторы
-        //std::copy(make_move_iterator(pos + 1), make_move_iterator(cend()), Iterator(pos));
         std::move(Iterator(pos + 1), Iterator(cend()), Iterator(pos));
         --size_;
         return Iterator(pos);
@@ -454,8 +404,6 @@ public:
     // Обменивает значение с другим вектором
     void swap(SimpleVector& other) noexcept
     {
-        // Напишите тело swap самостоятельно
-
         // Проверка самоприсваивания (через адрес)
         if (this == &other)
         {
@@ -470,14 +418,11 @@ public:
     // Увеличивает емкость вектора
     void Reserve(size_t new_capacity)
     {
-        // Напишите тело метода Reserve самостоятельно
         if (new_capacity > capacity_)
         {
             ArrayPtr<Type> buffer(new_capacity);
-            //std::copy(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
             std::move(internal_array_.Get(), internal_array_.Get() + size_, buffer.Get());
             // Оптимизация: не используем fill для области резервной памяти (size_...capacity_)
-            //std::fill(buffer.Get() + size_, buffer.Get() + new_capacity, Type());
             internal_array_.swap(buffer);
             capacity_ = new_capacity;
             // size_ не изменяем, т.к. количество элементов не меняется
@@ -489,7 +434,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     Iterator begin() noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get();
     }
 
@@ -497,7 +441,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     Iterator end() noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get() + size_;
     }
 
@@ -505,7 +448,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     ConstIterator begin() const noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get();
     }
 
@@ -513,7 +455,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     ConstIterator end() const noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get() + size_;
     }
 
@@ -521,7 +462,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     ConstIterator cbegin() const noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get();
     }
 
@@ -529,7 +469,6 @@ public:
     // Для пустого массива может быть равен (или не равен) nullptr
     ConstIterator cend() const noexcept
     {
-        //Напишите тело самостоятельно
         return internal_array_.Get() + size_;
     }
 
@@ -557,32 +496,24 @@ private:
 template <typename Type>
 inline bool operator==(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     return std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
 template <typename Type>
 inline bool operator!=(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     return !(lhs == rhs);
 }
 
 template <typename Type>
 inline bool operator<(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
 template <typename Type>
 inline bool operator<=(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     // выражение SimpleVector1 <= SimpleVector2 противоположно SimpleVector2 < SimpleVector1
     return !(rhs < lhs);
 }
@@ -590,8 +521,6 @@ inline bool operator<=(const SimpleVector<Type>& lhs, const SimpleVector<Type>& 
 template <typename Type>
 inline bool operator>(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     // выражение SimpleVector1 > SimpleVector2 эквивалентно SimpleVector2 < SimpleVector1
     return rhs < lhs;
 }
@@ -599,8 +528,6 @@ inline bool operator>(const SimpleVector<Type>& lhs, const SimpleVector<Type>& r
 template <typename Type>
 inline bool operator>=(const SimpleVector<Type>& lhs, const SimpleVector<Type>& rhs)
 {
-    // Заглушка. Напишите тело самостоятельно
-    // return true;
     // выражение SimpleVector1 >= SimpleVector2 противоположно SimpleVector2 > SimpleVector1
     return !(rhs > lhs);
 }
